@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chess Game DApp</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.umd.min.js"></script>
+  <script defer src="/public/js/metamask.js"></script>
+  <script defer src="/public/js/game.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
+    input { padding: 10px; font-size: 16px; margin: 10px; }
+    #errorMessage { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Chess Game DApp</h1>
+
+  <div>
+    <button id="connectWallet">Connect Wallet</button>
+    <p id="walletAddress">Not connected</p>
+  </div>
+  <div>
+    <button id="addBalance">Add 0.01 TBNB</button>
+    <p id="addBalanceStatus"></p>
+  </div>  
+  <div>
+    <button id="checkBalance">Check Balance</button>
+    <p id="balanceDisplay">Balance: 0 ETH</p>
+  </div>
+  <div>
+    <button id="withdrawFunds">Withdraw Funds</button>
+    <p id="withdrawStatus"></p>
+  </div>
+
+  <div>
+    <h2>Game code</h2>
+    <input type="text" id="codeInput" placeholder="Enter code">
+    <button id="createGame">Create Game</button>
+    <button id="joinGame">Join Game</button>
+    <div id="errorMessage"></div>
+  </div>
+</body>
+</html>
