@@ -1,45 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chess Game DApp</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.umd.min.js"></script>
-  <script defer src="/public/js/metamask.js"></script>
-  <script defer src="/public/js/game.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-    button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
-    input { padding: 10px; font-size: 16px; margin: 10px; }
-    #errorMessage { color: red; }
-  </style>
-</head>
-<body>
-  <h1>Chess Game DApp</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chess Game DApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.umd.min.js"></script>
+    <script defer src="/public/js/metamask.js"></script>
+    <script defer src="/public/js/game.js"></script>
+    <style>
+      /* General Reset and Layout */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: 'Arial', sans-serif;
+        color: white;
+        background: url("https://i.pinimg.com/originals/71/82/6e/71826e7166aedd33c2fdbc52eee736ad.png") no-repeat center center fixed;
+        background-size: cover;
+        text-align: center;
+        padding: 50px 20px;
+      }
 
-  <div>
-    <button id="connectWallet">Connect Wallet</button>
-    <p id="walletAddress">Not connected</p>
-  </div>
-  <div>
-    <button id="addBalance">Add 0.01 TBNB</button>
-    <p id="addBalanceStatus"></p>
-  </div>  
-  <div>
-    <button id="checkBalance">Check Balance</button>
-    <p id="balanceDisplay">Balance: 0 ETH</p>
-  </div>
-  <div>
-    <button id="withdrawFunds">Withdraw Funds</button>
-    <p id="withdrawStatus"></p>
-  </div>
+      /* Header */
+      h1 {
+        font-size: 36px;
+        font-weight: bold;
+        color: #f8b400; /* Christmas gold */
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+      }
 
-  <div>
-    <h2>Game code</h2>
-    <input type="text" id="codeInput" placeholder="Enter code">
-    <button id="createGame">Create Game</button>
-    <button id="joinGame">Join Game</button>
-    <div id="errorMessage"></div>
-  </div>
-</body>
+      /* Buttons Styling */
+      button {
+        padding: 12px 30px;
+        margin: 10px;
+        font-size: 18px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: #4caf50; /* Green */
+        color: white;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      button:hover {
+        background-color: #388e3c; /* Darker green */
+        transform: scale(1.05);
+        box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Input Fields */
+      input {
+        padding: 12px;
+        font-size: 16px;
+        margin: 10px;
+        width: 250px;
+        border-radius: 5px;
+        border: 2px solid #4caf50; /* Matching green */
+        background-color: #eeeeee;
+        color: #333;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #f8b400; /* Gold on focus */
+      }
+
+      /* Status and Error Messages */
+      #errorMessage {
+        color: #ff5722; /* Christmas orange */
+        margin-top: 10px;
+      }
+
+      #balanceDisplay,
+      #withdrawStatus,
+      #addBalanceStatus {
+        color: #4caf50; /* Christmas green */
+        margin-top: 10px;
+      }
+
+      /* Disabled State for Inaccessible Game Section */
+      .disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      /* Game Code Section */
+      #gameCodeSection {
+        margin-top: 40px;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 10px;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      #gameCodeSection h2 {
+        font-size: 24px;
+        margin-bottom: 15px;
+        color: #f8b400;
+      }
+
+      /* Footer Section */
+      footer {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        text-align: center;
+        color: white;
+        font-size: 14px;
+        font-weight: normal;
+      }
+
+      /* Team name on the left */
+      .team-name {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-size: 20px;
+        color: #f8b400;
+        font-weight: bold;
+        text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+      }
+
+      /* Christmas-style animations for Buttons and Input */
+      @keyframes bounceIn {
+        0% {
+          transform: scale(0);
+        }
+        60% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      button,
+      input {
+        animation: bounceIn 0.6s ease-out;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Team name on the left -->
+    <div class="team-name">GoChain</div>
+
+    <h1>Chess Game DApp</h1>
+
+    <!-- Connect Wallet Section -->
+    <div>
+      <button id="connectWallet">Connect Wallet</button>
+      <p id="walletAddress">Not connected</p>
+    </div>
+    
+    <!-- Add Balance Section -->
+    <div>
+      <button id="addBalance">Add 0.01 TBNB</button>
+      <p id="addBalanceStatus"></p>
+    </div>
+    
+    <!-- Check Balance Section -->
+    <div>
+      <button id="checkBalance">Check Balance</button>
+      <p id="balanceDisplay">Balance: 0 ETH</p>
+    </div>
+    
+    <!-- Withdraw Funds Section -->
+    <div>
+      <button id="withdrawFunds">Withdraw Funds</button>
+      <p id="withdrawStatus"></p>
+    </div>
+
+    <!-- Game Code Section -->
+    <div id="gameCodeSection">
+      <h2>Game Code</h2>
+      <input type="text" id="codeInput" placeholder="Enter code" />
+      <button id="createGame">Create Game</button>
+      <button id="joinGame">Join Game</button>
+      <div id="errorMessage"></div>
+    </div>
+
+    <!-- Footer Section -->
+    <footer>
+      © Copyright 2024, Rakymzhan Zhabagin
+    </footer>
+
+    <script>
+      // Event listeners for navigation
+      document.getElementById('createGame').addEventListener('click', function () {
+        const code = document.getElementById('codeInput').value;
+        if (code) {
+          window.location.replace(`/white?code=${code}`);
+        } else {
+          document.getElementById('errorMessage').textContent = 'Please enter a code.';
+        }
+      });
+
+      document.getElementById('joinGame').addEventListener('click', function () {
+        const code = document.getElementById('codeInput').value;
+        if (code) {
+          window.location.replace(`/black?code=${code}`);
+        } else {
+          document.getElementById('errorMessage').textContent = 'Please enter a code.';
+        }
+      });
+
+      // Handle error display if URL contains error parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('error') === 'invalidCode') {
+        document.getElementById('errorMessage').textContent = 'Invalid invite code';
+      }
+    </script>
+  </body>
 </html>

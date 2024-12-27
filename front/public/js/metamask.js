@@ -255,7 +255,6 @@ document.getElementById("checkBalance").addEventListener("click", async () => {
 });
 
 // Withdraw funds
-// Withdraw funds
 document.getElementById("withdrawFunds").addEventListener("click", async () => {
   if (!currentAccount) {
     alert("Please connect your wallet first.");
@@ -288,3 +287,63 @@ document.getElementById("withdrawFunds").addEventListener("click", async () => {
   }
 });
 
+// Reference the game code section
+const gameCodeSection = document.getElementById("gameCodeSection");
+const createGameButton = document.getElementById("createGame");
+const joinGameButton = document.getElementById("joinGame");
+
+// Function to check balance and enable the game code section
+async function updateGameCodeSectionAvailability() {
+  if (!currentAccount) {
+    gameCodeSection.classList.add("disabled");
+    createGameButton.disabled = true;
+    joinGameButton.disabled = true;
+    return;
+  }
+
+  try {
+    const contractAddress = "0x21c56F5aB509aE35585b38a26504A38f91d942F9";
+    const contractABI = [
+      {
+        "inputs": [{ "internalType": "address", "name": "player", "type": "address" }],
+        "name": "getPlayerBalance",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function",
+      },
+    ];
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const contract = new ethers.Contract(contractAddress, contractABI, provider);
+
+    // Get player's balance
+    const balance = await contract.getPlayerBalance(currentAccount);
+    const balanceInEther = ethers.utils.formatEther(balance);
+
+    if (parseFloat(balanceInEther) >= 0.01) {
+      gameCodeSection.classList.remove("disabled");
+      createGameButton.disabled = false;
+      joinGameButton.disabled = false;
+    } else {
+      gameCodeSection.classList.add("disabled");
+      createGameButton.disabled = true;
+      joinGameButton.disabled = true;
+    }
+  } catch (error) {
+    console.error("Error checking balance:", error);
+    gameCodeSection.classList.add("disabled");
+    createGameButton.disabled = true;
+    joinGameButton.disabled = true;
+  }
+}
+
+// Check balance and update availability on load
+document.getElementById("checkBalance").addEventListener("click", updateGameCodeSectionAvailability);
+
+// Automatically update when the wallet is connected
+document.getElementById("connectWallet").addEventListener("click", async () => {
+  await updateGameCodeSectionAvailability();
+});
+
+// Optionally call it once during page load
+updateGameCodeSectionAvailability();
