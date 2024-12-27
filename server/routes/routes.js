@@ -18,4 +18,9 @@ module.exports = app => {
             color: 'black'
         });
     });
+
+    app.get('/prize', (req, res) => {
+        res.render('prize', {
+        });
+    });
 };

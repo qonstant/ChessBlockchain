@@ -10,10 +10,53 @@
         <label>PGN:</label>
         <div id="pgn"></div>
 
+        <div id="prizeSection" style="display: none; margin-top: 20px;">
+            <label for="wallet">Enter Wallet Address:</label>
+            <input type="text" id="wallet" placeholder="Wallet Address">
+            <button id="getPrize" class="btn btn-primary">Claim Prize</button>
+            <div id="winner-display"></div>
+        </div>
+
         <script>
             let playerColor = '{{color}}';
             console.log('Playing as ' + playerColor);
+
+            let isPrizeClaimed = false; // To ensure the button is clickable only once
+
+            // Function to display prize section when a player wins
+            function handleWin(winnerColor) {
+                if (winnerColor === playerColor) {
+                    document.getElementById('prizeSection').style.display = 'block';
+                }
+            }
+
+            // Function to handle prize claiming
+            document.getElementById('getPrizeButton').addEventListener('click', function () {
+                if (isPrizeClaimed) {
+                    alert('Prize already claimed!');
+                    return;
+                }
+
+                const walletAddress = document.getElementById('wallet').value;
+
+                if (!walletAddress) {
+                    alert('Please enter a wallet address!');
+                    return;
+                }
+
+                // Simulate sending prize to the wallet (replace with actual logic)
+                console.log('Sending prize to wallet:', walletAddress);
+                alert('Prize sent to wallet: ' + walletAddress);
+
+                // Mark the prize as claimed
+                isPrizeClaimed = true;
+                document.getElementById('getPrizeButton').disabled = true;
+            });
+
+            // Example: Simulate a player win (replace this with actual game logic)
+            setTimeout(() => handleWin('white'), 5000); // Simulate 'white' wins after 5 seconds
         </script>
+
         <script src="/public/js/index.js"></script>
 
     </body>

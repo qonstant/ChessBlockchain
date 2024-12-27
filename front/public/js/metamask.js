@@ -1,5 +1,5 @@
 // Constants
-const CONTRACT_ADDRESS = "0x1224a793D5aa1C789Fe12552940129C0557c82fA";
+const CONTRACT_ADDRESS = "0x4a97d77B26cFB4779236297628A2A8954dDdDAc4";
 const CONTRACT_ABI = [
   {
     anonymous: false,
@@ -25,27 +25,15 @@ const CONTRACT_ABI = [
     inputs: [
       {
         indexed: true,
-        internalType: "uint256",
-        name: "gameId",
-        type: "uint256",
+        internalType: "string",
+        name: "code",
+        type: "string",
       },
       {
         indexed: true,
         internalType: "address",
         name: "player1",
         type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "player2",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "stake",
-        type: "uint256",
       },
     ],
     name: "GameCreated",
@@ -56,9 +44,9 @@ const CONTRACT_ABI = [
     inputs: [
       {
         indexed: true,
-        internalType: "uint256",
-        name: "gameId",
-        type: "uint256",
+        internalType: "string",
+        name: "code",
+        type: "string",
       },
       {
         indexed: true,
@@ -75,59 +63,9 @@ const CONTRACT_ABI = [
     inputs: [
       {
         indexed: true,
-        internalType: "uint256",
-        name: "gameId",
-        type: "uint256",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "winner",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "reward",
-        type: "uint256",
-      },
-    ],
-    name: "GamePlayed",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
         internalType: "string",
-        name: "message",
+        name: "code",
         type: "string",
-      },
-      {
-        indexed: false,
-        internalType: "address",
-        name: "player",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "Log",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "gameId",
-        type: "uint256",
       },
       {
         indexed: true,
@@ -146,6 +84,31 @@ const CONTRACT_ABI = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "string",
+        name: "code",
+        type: "string",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "winner",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "WinnerPaid",
+    type: "event",
+  },
+  {
     inputs: [],
     name: "FIXED_DEPOSIT_AMOUNT",
     outputs: [
@@ -161,14 +124,14 @@ const CONTRACT_ABI = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "player2",
-        type: "address",
+        internalType: "string",
+        name: "code",
+        type: "string",
       },
     ],
-    name: "createGame",
+    name: "createGameWithCode",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
@@ -179,24 +142,11 @@ const CONTRACT_ABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "gameCount",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
-        internalType: "uint256",
+        internalType: "string",
         name: "",
-        type: "uint256",
+        type: "string",
       },
     ],
     name: "games",
@@ -246,22 +196,22 @@ const CONTRACT_ABI = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "gameId",
-        type: "uint256",
+        internalType: "string",
+        name: "code",
+        type: "string",
       },
     ],
     name: "joinGame",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "gameId",
-        type: "uint256",
+        internalType: "string",
+        name: "code",
+        type: "string",
       },
       {
         internalType: "address",
@@ -269,7 +219,7 @@ const CONTRACT_ABI = [
         type: "address",
       },
     ],
-    name: "playGame",
+    name: "payWinner",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -296,9 +246,9 @@ const CONTRACT_ABI = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "gameId",
-        type: "uint256",
+        internalType: "string",
+        name: "code",
+        type: "string",
       },
     ],
     name: "requestRefund",
@@ -344,19 +294,22 @@ const handleError = (error, element, message) => {
   if (element) element.textContent = message;
 };
 
-// Connect Wallet
-document.getElementById("connectWallet").addEventListener("click", async () => {
-  if (!window.ethereum)
-    return alert("Please install MetaMask to use this DApp.");
+// Add Balance
+document.getElementById("addBalance").addEventListener("click", async () => {
   try {
-    const accounts = await window.ethereum.request({
-      method: "eth_requestAccounts",
-    });
-    currentAccount = accounts[0];
-    walletAddress.textContent = `Connected: ${currentAccount}`;
-    await updateGameCodeSectionAvailability();
+    // Fixed deposit amount in wei (e.g., 0.01 ETH)
+    const depositAmount = ethers.utils.parseEther("0.01");
+
+    // Sending transaction to the smart contract's deposit function
+    const tx = await contract.deposit({ value: depositAmount });
+
+    // Wait for the transaction to be mined
+    await tx.wait();
+
+    // Update status message
+    addBalanceStatus.textContent = "Balance added successfully!";
   } catch (error) {
-    handleError(error, null, "Error connecting wallet.");
+    handleError(error, addBalanceStatus, "Failed to add balance.");
   }
 });
 
@@ -370,10 +323,10 @@ document.getElementById("connectWallet").addEventListener("click", async () => {
     });
     currentAccount = accounts[0];
     walletAddress.textContent = `Connected: ${currentAccount}`;
-    
+
     // Save wallet address to local storage
     localStorage.setItem("currentWalletAddress", currentAccount);
-    
+
     await updateGameCodeSectionAvailability();
   } catch (error) {
     handleError(error, null, "Error connecting wallet.");
