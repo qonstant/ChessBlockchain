@@ -1,298 +1,416 @@
-// Metamask interaction script
+// Constants
+const CONTRACT_ADDRESS = "0x1224a793D5aa1C789Fe12552940129C0557c82fA";
+const CONTRACT_ABI = [
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "player",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "Deposited",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "gameId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "player1",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "player2",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "stake",
+        type: "uint256",
+      },
+    ],
+    name: "GameCreated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "gameId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "player2",
+        type: "address",
+      },
+    ],
+    name: "GameJoined",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "gameId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "winner",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "reward",
+        type: "uint256",
+      },
+    ],
+    name: "GamePlayed",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "string",
+        name: "message",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "player",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "Log",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "gameId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "player",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "Refunded",
+    type: "event",
+  },
+  {
+    inputs: [],
+    name: "FIXED_DEPOSIT_AMOUNT",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "player2",
+        type: "address",
+      },
+    ],
+    name: "createGame",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "deposit",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "gameCount",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "games",
+    outputs: [
+      {
+        internalType: "address",
+        name: "player1",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "player2",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "stake",
+        type: "uint256",
+      },
+      {
+        internalType: "bool",
+        name: "isActive",
+        type: "bool",
+      },
+      {
+        internalType: "bool",
+        name: "isRefunded",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getContractBalance",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "gameId",
+        type: "uint256",
+      },
+    ],
+    name: "joinGame",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "gameId",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "winner",
+        type: "address",
+      },
+    ],
+    name: "playGame",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "playerBalances",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "gameId",
+        type: "uint256",
+      },
+    ],
+    name: "requestRefund",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+    ],
+    name: "withdraw",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+];
 
+// State variables
 let currentAccount = null;
+
+// DOM Elements
 const balanceDisplay = document.getElementById("balanceDisplay");
 const walletAddress = document.getElementById("walletAddress");
 const withdrawStatus = document.getElementById("withdrawStatus");
+const addBalanceStatus = document.getElementById("addBalanceStatus");
+const gameCodeSection = document.getElementById("gameCodeSection");
+const createGameButton = document.getElementById("createGame");
+const joinGameButton = document.getElementById("joinGame");
 
-// Handle adding balance
-document.getElementById("addBalance").addEventListener("click", async () => {
-  if (!currentAccount) {
-    alert("Please connect your wallet first.");
-    return;
-  }
-  try {
-    // Replace with your contract address and ABI
-    const contractAddress = "0x21c56F5aB509aE35585b38a26504A38f91d942F9";
-    const contractABI = [
-      {
-        "inputs": [],
-        "name": "deposit",
-        "outputs": [],
-        "stateMutability": "payable",
-        "type": "function"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "player",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "Deposited",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "player1",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "player2",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "address",
-            "name": "winner",
-            "type": "address"
-          }
-        ],
-        "name": "GamePlayed",
-        "type": "event"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "player2",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "winner",
-            "type": "address"
-          }
-        ],
-        "name": "playGame",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "withdraw",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "player",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "Withdrawn",
-        "type": "event"
-      },
-      {
-        "inputs": [],
-        "name": "FIXED_DEPOSIT_AMOUNT",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "getContractBalance",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "player",
-            "type": "address"
-          }
-        ],
-        "name": "getPlayerBalance",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "name": "playerBalances",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      }
-    ];
+// Initialize ethers.js provider and signer
+const provider = new ethers.providers.Web3Provider(window.ethereum);
+const signer = provider.getSigner();
+const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const contract = new ethers.Contract(contractAddress, contractABI, signer);
+// Utility: Show error messages
+const handleError = (error, element, message) => {
+  console.error(message, error);
+  if (element) element.textContent = message;
+};
 
-    const tx = await contract.deposit({
-      value: ethers.utils.parseUnits("0.01", "ether"), // 0.01 TBNB in wei
-    });
-
-    document.getElementById("addBalanceStatus").textContent =
-      "Transaction sent. Waiting for confirmation...";
-
-    await tx.wait();
-    document.getElementById("addBalanceStatus").textContent =
-      "Balance added successfully!";
-  } catch (error) {
-    console.error("Error adding balance:", error);
-    document.getElementById("addBalanceStatus").textContent =
-      "Error adding balance.";
-  }
-});
-
-// Connect
+// Connect Wallet
 document.getElementById("connectWallet").addEventListener("click", async () => {
-  if (typeof window.ethereum === "undefined") {
-    alert("MetaMask is not installed. Please install it to use this DApp.");
-    return;
-  }
+  if (!window.ethereum)
+    return alert("Please install MetaMask to use this DApp.");
   try {
     const accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
     });
     currentAccount = accounts[0];
     walletAddress.textContent = `Connected: ${currentAccount}`;
-    console.log("Wallet connected:", currentAccount);
+    await updateGameCodeSectionAvailability();
   } catch (error) {
-    console.error("Error connecting wallet:", error);
-    alert("Could not connect wallet. Please try again.");
+    handleError(error, null, "Error connecting wallet.");
   }
 });
 
-// Check balance
+// Connect Wallet
+document.getElementById("connectWallet").addEventListener("click", async () => {
+  if (!window.ethereum)
+    return alert("Please install MetaMask to use this DApp.");
+  try {
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+    currentAccount = accounts[0];
+    walletAddress.textContent = `Connected: ${currentAccount}`;
+    
+    // Save wallet address to local storage
+    localStorage.setItem("currentWalletAddress", currentAccount);
+    
+    await updateGameCodeSectionAvailability();
+  } catch (error) {
+    handleError(error, null, "Error connecting wallet.");
+  }
+});
+
+// Check Balance
 document.getElementById("checkBalance").addEventListener("click", async () => {
-  if (!currentAccount) {
-    alert("Please connect your wallet first.");
-    return;
-  }
-
+  if (!currentAccount) return alert("Please connect your wallet first.");
   try {
-    // Replace with your contract address and ABI
-    const contractAddress = "0x21c56F5aB509aE35585b38a26504A38f91d942F9";
-    const contractABI = [
-      {
-        "inputs": [
-          { "internalType": "address", "name": "player", "type": "address" }
-        ],
-        "name": "getPlayerBalance",
-        "outputs": [
-          { "internalType": "uint256", "name": "", "type": "uint256" }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-    ];
-
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const contract = new ethers.Contract(contractAddress, contractABI, provider);
-
-    // Call the contract's getPlayerBalance function
-    const balance = await contract.getPlayerBalance(currentAccount);
-
-    // Display the balance in ETH (converting from wei)
-    balanceDisplay.textContent = `Balance: ${ethers.utils.formatEther(balance)} TBNB`;
+    // Access the player's balance using the mapping
+    const balance = await contract.playerBalances(currentAccount);
+    balanceDisplay.textContent = `Balance: ${ethers.utils.formatEther(
+      balance
+    )} TBNB`;
+    await updateGameCodeSectionAvailability();
   } catch (error) {
-    console.error("Error checking balance:", error);
-    balanceDisplay.textContent = "Error checking balance.";
+    handleError(error, balanceDisplay, "Error checking balance.");
   }
 });
 
-// Withdraw funds
+// Withdraw Funds
 document.getElementById("withdrawFunds").addEventListener("click", async () => {
-  if (!currentAccount) {
-    alert("Please connect your wallet first.");
-    return;
-  }
+  if (!currentAccount) return alert("Please connect your wallet first.");
   try {
-    // Replace with your contract address and ABI
-    const contractAddress = "0x21c56F5aB509aE35585b38a26504A38f91d942F9";
-    const contractABI = [
-      {
-        "inputs": [],
-        "name": "withdraw",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-    ];
-
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const contract = new ethers.Contract(contractAddress, contractABI, signer);
-
-    const tx = await contract.withdraw();
-    withdrawStatus.textContent = "Transaction sent. Waiting for confirmation...";
+    const amount = await contract.playerBalances(currentAccount); // Fetch current player's balance
+    const tx = await contract.withdraw(amount); // Pass the amount to withdraw
+    withdrawStatus.textContent =
+      "Transaction sent. Waiting for confirmation...";
     await tx.wait();
     withdrawStatus.textContent = "Funds withdrawn successfully!";
   } catch (error) {
-    console.error("Error during withdrawal:", error);
-    withdrawStatus.textContent = "Withdrawal failed.";
+    handleError(error, withdrawStatus, "Error during withdrawal.");
   }
 });
 
-// Reference the game code section
-const gameCodeSection = document.getElementById("gameCodeSection");
-const createGameButton = document.getElementById("createGame");
-const joinGameButton = document.getElementById("joinGame");
-
-// Function to check balance and enable the game code section
+// Update Game Code Section Availability
 async function updateGameCodeSectionAvailability() {
   if (!currentAccount) {
     gameCodeSection.classList.add("disabled");
@@ -300,50 +418,16 @@ async function updateGameCodeSectionAvailability() {
     joinGameButton.disabled = true;
     return;
   }
-
   try {
-    const contractAddress = "0x21c56F5aB509aE35585b38a26504A38f91d942F9";
-    const contractABI = [
-      {
-        "inputs": [{ "internalType": "address", "name": "player", "type": "address" }],
-        "name": "getPlayerBalance",
-        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-        "stateMutability": "view",
-        "type": "function",
-      },
-    ];
-
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const contract = new ethers.Contract(contractAddress, contractABI, provider);
-
-    // Get player's balance
-    const balance = await contract.getPlayerBalance(currentAccount);
+    // Use playerBalances to fetch the balance
+    const balance = await contract.playerBalances(currentAccount);
     const balanceInEther = ethers.utils.formatEther(balance);
+    const hasSufficientBalance = parseFloat(balanceInEther) >= 0.01;
 
-    if (parseFloat(balanceInEther) >= 0.01) {
-      gameCodeSection.classList.remove("disabled");
-      createGameButton.disabled = false;
-      joinGameButton.disabled = false;
-    } else {
-      gameCodeSection.classList.add("disabled");
-      createGameButton.disabled = true;
-      joinGameButton.disabled = true;
-    }
+    gameCodeSection.classList.toggle("disabled", !hasSufficientBalance);
+    createGameButton.disabled = !hasSufficientBalance;
+    joinGameButton.disabled = !hasSufficientBalance;
   } catch (error) {
-    console.error("Error checking balance:", error);
-    gameCodeSection.classList.add("disabled");
-    createGameButton.disabled = true;
-    joinGameButton.disabled = true;
+    handleError(error, null, "Error checking balance for game availability.");
   }
 }
-
-// Check balance and update availability on load
-document.getElementById("checkBalance").addEventListener("click", updateGameCodeSectionAvailability);
-
-// Automatically update when the wallet is connected
-document.getElementById("connectWallet").addEventListener("click", async () => {
-  await updateGameCodeSectionAvailability();
-});
-
-// Optionally call it once during page load
-updateGameCodeSectionAvailability();

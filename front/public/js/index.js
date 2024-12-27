@@ -108,19 +108,36 @@ if (playerColor == 'black') {
 
 updateStatus()
 
+// Function to log wallet address from local storage
+function logWalletAddress() {
+    const walletData = localStorage.getItem('currentWalletAddress');
+    if (walletData) {
+        try {
+            const parsedWalletData = JSON.parse(walletData);
+            console.log("Wallet Address:", parsedWalletData.address);
+        } catch (error) {
+            console.error("Failed to parse wallet data from local storage:", error);
+        }
+    } else {
+        console.warn("No wallet data found in local storage.");
+    }
+}
+
 var urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('code')) {
     socket.emit('joinGame', {
         code: urlParams.get('code')
     });
+    logWalletAddress(); // Log wallet address after joining game
 }
 
 socket.on('startGame', function() {
     gameHasStarted = true;
-    updateStatus()
+    updateStatus();
+    logWalletAddress(); // Log wallet address after game starts
 });
 
 socket.on('gameOverDisconnect', function() {
     gameOver = true;
-    updateStatus()
+    updateStatus();
 });
