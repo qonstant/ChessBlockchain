@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.0/dist/ethers.umd.min.js"></script>
     <script defer src="/public/js/metamask.js"></script>
     <script defer src="/public/js/game.js"></script>
+    <script defer src="/public/js/gameCreation.js"></script>
     <style>
       /* General Reset and Layout */
       * {
@@ -192,32 +193,5 @@
     <footer>
       © Copyright 2024, Rakymzhan Zhabagin
     </footer>
-
-    <script>
-      // Event listeners for navigation
-      document.getElementById('createGame').addEventListener('click', function () {
-        const code = document.getElementById('codeInput').value;
-        if (code) {
-          window.location.replace(`/white?code=${code}`);
-        } else {
-          document.getElementById('errorMessage').textContent = 'Please enter a code.';
-        }
-      });
-
-      document.getElementById('joinGame').addEventListener('click', function () {
-        const code = document.getElementById('codeInput').value;
-        if (code) {
-          window.location.replace(`/black?code=${code}`);
-        } else {
-          document.getElementById('errorMessage').textContent = 'Please enter a code.';
-        }
-      });
-
-      // Handle error display if URL contains error parameter
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('error') === 'invalidCode') {
-        document.getElementById('errorMessage').textContent = 'Invalid invite code';
-      }
-    </script>
   </body>
 </html>
