@@ -359,7 +359,11 @@ function updateStatus() {
 
   if (game.in_checkmate()) {
     status = "Game over, " + moveColor + " is in checkmate.";
-    handleGameOver(moveColor); // Handle winner
+    if (moveColor == "Black") {
+        handleGameOver("White"); // Handle winner
+    } else {
+        handleGameOver("Black");
+    }
   } else if (game.in_draw()) {
     status = "Game over, drawn position";
   } else if (gameOver) {
@@ -434,31 +438,16 @@ async function handleGameOver(winnerColor) {
     gameOver = true;
     updateStatus();
 
-    // Ensure winnerAddress is initialized
-    if (!winnerAddress) {
-        console.warn("Winner address not initialized!");
-        const walletData = localStorage.getItem("currentWalletAddress");
-        if (walletData) {
-            winnerAddress = JSON.parse(walletData) || walletData;
-        } else {
-            console.error("No winner address available!");
-            return;
-        }
+    // Convert both playerColor and winnerColor to lowercase for case-insensitive comparison
+    console.log(`Player color: ${playerColor}`);
+    console.log(`Winner color: ${winnerColor}`);
+    if (playerColor.toLowerCase() === winnerColor.toLowerCase()) {
+        const winnerPageURL = "/prize"; 
+        console.log(`Redirecting ${winnerColor} player to the prize page.`);
+        window.location.href = winnerPageURL;
+    } else {
+        console.log(`${playerColor} player lost. No redirection.`);
     }
-
-    let winnerWallet = "";
-    if (winnerColor === "White") {
-        winnerWallet = winnerAddress;
-    } else if (winnerColor === "Black") {
-        winnerWallet = winnerAddress;
-    }
-
-    console.log("Winner Address:", winnerWallet);
-
-    // Redirect to another page with the winner information
-    const redirectUrl = `/winner.html?winnerColor=${winnerColor}&wallet=${winnerWallet}`;
-    alert(`Game over! Redirecting to the winner page.`);
-    window.location.href = redirectUrl;
 }
 
 // Function to get the wallet address of the loser based on the player color
